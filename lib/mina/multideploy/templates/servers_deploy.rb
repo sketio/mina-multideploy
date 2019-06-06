@@ -36,7 +36,7 @@ Parallel.each(SERVERS, in_threads: SERVERS.length) do |ip, names|
     FileUtils.rm "#{l_dir}/#{l_file_name}" if File.exist?("#{l_dir}/#{l_file_name}")
     File.write("#{c_dir}/#{c_file_name}", custom_deploy_config)
 
-    cmd = "mina #{Rails.env} deploy -f #{c_dir}/#{c_file_name}"
+    cmd = "mina #{ENV["DEPLOY_ENV"]} deploy -f #{c_dir}/#{c_file_name}"
     cmd = `#{cmd}`
 
     logger = Logger.new("#{l_dir}/#{l_file_name}")
