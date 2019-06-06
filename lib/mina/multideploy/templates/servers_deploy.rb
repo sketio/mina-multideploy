@@ -30,13 +30,13 @@ Parallel.each(SERVERS, in_threads: SERVERS.length) do |ip, names|
     c_file_name = "#{ip}-#{site}.rb"
     l_file_name = "#{ip}-#{site}.log"
 
-    custom_deploy_config = original_deploy_config.gsub(/^set :application_name(.*)/, "set :application_name, :#{site}")
-    custom_deploy_config = custom_deploy_config.gsub(/^set :domain(.*)/, "set :domain, '#{ip}'")
+    custom_deploy_config = original_deploy_config.sub(/set :application_name(.*)/, "set :application_name, :#{site}")
+    custom_deploy_config = custom_deploy_config.sub(/set :domain(.*)/, "set :domain, '#{ip}'")
 
     FileUtils.rm "#{l_dir}/#{l_file_name}" if File.exist?("#{l_dir}/#{l_file_name}")
     File.write("#{c_dir}/#{c_file_name}", custom_deploy_config)
 
-    cmd = "mina deploy -f #{c_dir}/#{c_file_name}"
+    cmd = "mina #{Rails.env} deploy -f #{c_dir}/#{c_file_name}"
     cmd = `#{cmd}`
 
     logger = Logger.new("#{l_dir}/#{l_file_name}")
