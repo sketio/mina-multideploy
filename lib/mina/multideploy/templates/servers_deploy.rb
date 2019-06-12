@@ -33,10 +33,22 @@ Parallel.each(SERVERS, in_threads: SERVERS.length) do |ip, names|
     custom_deploy_config = original_deploy_config.sub(/set :application_name(.*)/, "set :application_name, :#{site}")
     custom_deploy_config = custom_deploy_config.sub(/set :domain(.*)/, "set :domain, '#{ip}'")
 
+    # remove extra tasks per web instances
+    if site.include?('web')
+      custom_deploy_config = custom_deploy_config.sub("invoke :'sidekiq:quiet'", '')
+      custom_deploy_config = custom_deploy_config.sub("invoke :'rails:db_migrate'", '')
+      custom_deploy_config = custom_deploy_config.sub("invoke :'sidekiq:restart'", '')
+    end
+
+    # remove extra tasks per worker instances
+    if site.include?('worker')
+      custom_deploy_config = custom_deploy_config.sub("invoke :'rails:assets_precompile'", "")
+    end
+
     FileUtils.rm "#{l_dir}/#{l_file_name}" if File.exist?("#{l_dir}/#{l_file_name}")
     File.write("#{c_dir}/#{c_file_name}", custom_deploy_config)
 
-    cmd = "mina #{ENV["DEPLOY_ENV"]} deploy -f #{c_dir}/#{c_file_name}"
+    cmd = "mina #{ENV['DEPLOY_ENV']} deploy -f #{c_dir}/#{c_file_name}"
     cmd = `#{cmd}`
 
     logger = Logger.new("#{l_dir}/#{l_file_name}")
